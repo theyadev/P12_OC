@@ -20,9 +20,8 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name='contract',
             name='status',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='crm.contractstatus'),
         ),
     ]
