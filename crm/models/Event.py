@@ -3,6 +3,13 @@ from django.db import models
 
 
 class Event(models.Model):
+    class Meta:
+        ordering = ['date']
+        permissions = [
+            ('view_own_event', 'Can view own event'),
+            ('edit_own_event', 'Can update, delete own event'),
+        ]
+
     client = models.ForeignKey("Client", on_delete=models.PROTECT)
     support_contact = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

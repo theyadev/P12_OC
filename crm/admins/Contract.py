@@ -1,3 +1,4 @@
+from ..models.Contract import Contract
 from ..models.ContractStatus import ContractStatus
 from django.contrib.admin import ModelAdmin, SimpleListFilter
 
@@ -27,3 +28,43 @@ class ContractAdmin(ModelAdmin):
                 'sales_contact', 'created_at', 'updated_at')
     filter_horizontal = ()
     list_per_page = 25
+
+    def save_model(self, request, obj, form, change):
+        obj.sales_contact = request.user
+        obj.save()
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == Contract:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.sales_contact = request.user
+                instance.save()
+        else:
+            formset.save()
+
+    def has_view_permission(self, request, obj=None):
+        if not request.user.has_perm('auth.view_own_contract'):
+            return super().has_view_permission(request, obj)
+
+        if obj is None:
+            return True
+
+        return obj.client.sales_contact == request.user
+
+    def has_delete_permission(self, request, obj=None):
+        if not request.user.has_perm('auth.edit_own_contract'):
+            return super().has_delete_permission(request, obj)
+
+        if obj is None:
+            return False
+
+        return obj.client.sales_contact == request.user
+
+    def has_change_permission(self, request, obj=None):
+        if not request.user.has_perm('auth.edit_own_contract'):
+            return super().has_change_permission(request, obj)
+
+        if obj is None:
+            return False
+
+        return obj.client.sales_contact == request.user
