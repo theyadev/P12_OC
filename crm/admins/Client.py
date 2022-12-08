@@ -1,6 +1,6 @@
 from django.contrib.admin import ModelAdmin
 
-from ..models.Client import Client
+from ..models import Client
 
 
 class ClientAdmin(ModelAdmin):
@@ -26,15 +26,6 @@ class ClientAdmin(ModelAdmin):
                 instance.save()
         else:
             formset.save()
-
-    def has_view_permission(self, request, obj=None) -> bool:
-        if not request.user.has_perm('auth.view_own_client'):
-            return super().has_view_permission(request, obj)
-
-        if obj is None:
-            return True
-
-        return obj.sales_contact == request.user
 
     def has_delete_permission(self, request, obj=None):
         if not request.user.has_perm('auth.edit_own_client'):

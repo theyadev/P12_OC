@@ -13,9 +13,9 @@ class Client(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField(max_length=254)
-    phone = models.CharField(max_length=20)
-    mobile = models.CharField(max_length=20)
-    company_name = models.CharField(max_length=50)
+    phone = models.CharField(max_length=20, blank=True)
+    mobile = models.CharField(max_length=20, blank=True)
+    company_name = models.CharField(max_length=50, blank=True)
     sales_contact = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from models.Contract import Contract
+from ..models import Contract
 
 
 class ContractSerializer(serializers.ModelSerializer):

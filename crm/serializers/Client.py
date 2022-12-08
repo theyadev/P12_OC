@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from models.Client import Client
+from ..models import Client
 
 
 class ClientSerializer(serializers.ModelSerializer):

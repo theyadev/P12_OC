@@ -1,5 +1,5 @@
-from ..models.Contract import Contract
-from ..models.ContractStatus import ContractStatus
+from ..models import Contract, ContractStatus
+
 from django.contrib.admin import ModelAdmin, SimpleListFilter
 
 
@@ -41,15 +41,6 @@ class ContractAdmin(ModelAdmin):
                 instance.save()
         else:
             formset.save()
-
-    def has_view_permission(self, request, obj=None):
-        if not request.user.has_perm('auth.view_own_contract'):
-            return super().has_view_permission(request, obj)
-
-        if obj is None:
-            return True
-
-        return obj.client.sales_contact == request.user
 
     def has_delete_permission(self, request, obj=None):
         if not request.user.has_perm('auth.edit_own_contract'):

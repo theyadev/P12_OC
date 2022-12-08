@@ -1,7 +1,5 @@
 from django.contrib.admin import ModelAdmin
 
-from ..models.Event import Event
-
 
 class EventAdmin(ModelAdmin):
     list_display = ('client', 'attendees', 'support_contact',
@@ -12,15 +10,6 @@ class EventAdmin(ModelAdmin):
     ordering = ('date', 'created_at', 'updated_at', )
     filter_horizontal = ()
     list_per_page = 25
-
-    def has_view_permission(self, request, obj=None) -> bool:
-        if not request.user.has_perm('auth.view_own_event'):
-            return super().has_view_permission(request, obj)
-
-        if obj is None:
-            return True
-
-        return obj.supports_contact == request.user
 
     def has_delete_permission(self, request, obj=None):
         if not request.user.has_perm('auth.edit_own_event'):
