@@ -29,21 +29,16 @@ class ClientView(APIView):
         return Response(ClientSerializer(client).data)
 
     @authentication_classes([IsSalesGroup])
-    @check_fields(['first_name', 'email', 'last_name', 'sales_contact'])
+    @check_fields(['first_name', 'email', 'last_name'])
     def post(self, request, client_id=None):
-        if not User.objects.filter(id=request.data['sales_contact']).exists():
-            return Response(status=404, data={'error': 'Sales contact not found.'})
-
         if Client.objects.filter(Q(email=request.data['email'])).exists():
             return Response(status=400, data={'error': 'Client already exists.'})
-
-        sales_contact = User.objects.get(id=request.data['sales_contact'])
 
         client = Client.objects.create(
             first_name=request.data['first_name'],
             last_name=request.data['last_name'],
             email=request.data['email'],
-            sales_contact=sales_contact,
+            sales_contact=request.user,
             phone=request.data.get('phone', ""),
             mobile=request.data.get('mobile', ""),
             company_name=request.data.get('company_name', ""),
@@ -52,7 +47,7 @@ class ClientView(APIView):
         return Response(ClientSerializer(client).data)
 
     @authentication_classes([IsSalesGroup])
-    def update(self, request, client_id):
+    def put(self, request, client_id):
         if not Client.objects.filter(id=client_id).exists():
             return Response(status=404, data={'error': 'Client not found.'})
 
@@ -79,3 +74,14 @@ class ClientView(APIView):
         client.save()
 
         return Response(ClientSerializer(client).data)
+
+    @authentication_classes([IsSalesGroup])
+    def delete(self, request, client_id):
+        if not Client.objects.filter(id=client_id).exists():
+            return Response(status=404, data={'error': 'Client not found.'})
+
+        client = Client.objects.get(id=client_id)
+
+        client.delete()
+
+        return Response(status=204)

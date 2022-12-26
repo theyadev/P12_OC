@@ -59,3 +59,6 @@ class ContractAdmin(ModelAdmin):
             return False
 
         return obj.client.sales_contact == request.user
+
+    def has_view_permission(self, request, obj=None) -> bool:
+        return True

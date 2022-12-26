@@ -28,3 +28,6 @@ class EventAdmin(ModelAdmin):
             return False
 
         return obj.supports_contact == request.user
+
+    def has_view_permission(self, request, obj=None) -> bool:
+        return True

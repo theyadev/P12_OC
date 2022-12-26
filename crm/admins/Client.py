@@ -13,6 +13,7 @@ class ClientAdmin(ModelAdmin):
                 'company_name', 'sales_contact', 'created_at', 'updated_at')
     filter_horizontal = ()
     list_per_page = 25
+    
 
     def save_model(self, request, obj, form, change):
         obj.sales_contact = request.user
@@ -35,6 +36,9 @@ class ClientAdmin(ModelAdmin):
             return False
 
         return obj.sales_contact == request.user
+
+    def has_view_permission(self, request, obj=None) -> bool:
+        return True
 
     def has_change_permission(self, request, obj=None):
         if not request.user.has_perm('auth.edit_own_client'):
