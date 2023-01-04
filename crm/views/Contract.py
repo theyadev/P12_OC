@@ -22,6 +22,16 @@ class ContractView(APIView):
                     client__sales_contact=request.user)
             )
 
+            if 'search' in request.GET:
+                contracts = contracts.filter(
+                    Q(client__first_name__icontains=request.GET['search']) |
+                    Q(client__last_name__icontains=request.GET['search']) |
+                    Q(client__email__icontains=request.GET['search']) |
+                    Q(client__company_name__icontains=request.GET['search']) |
+                    Q(payment_due__icontains=request.GET['search']) |
+                    Q(amount__icontains=request.GET['search'])
+                )
+
             return Response(ContractSerializer(contracts, many=True).data)
 
         if not Contract.objects.filter(id=contract_id).exists():

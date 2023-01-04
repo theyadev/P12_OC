@@ -19,6 +19,14 @@ class ClientView(APIView):
         if not client_id:
             clients = Client.objects.all()
 
+            if 'search' in request.GET:
+                clients = clients.filter(
+                    Q(first_name__icontains=request.GET['search']) |
+                    Q(last_name__icontains=request.GET['search']) |
+                    Q(email__icontains=request.GET['search']) |
+                    Q(company_name__icontains=request.GET['search'])
+                )
+
             return Response(ClientSerializer(clients, many=True).data)
 
         if not Client.objects.filter(id=client_id).exists():

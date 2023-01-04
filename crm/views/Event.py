@@ -11,6 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import re
+
+def is_valid_date(date_string):
+    regex = r'\d{4}-\d{2}-\d{2}'
+    if re.match(regex, date_string):
+        return True
+    return False
 
 class EventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -21,6 +28,14 @@ class EventView(APIView):
                 Q(support_contact=request.user) | Q(
                     client__sales_contact=request.user)
             )
+
+            if 'search' in request.GET:
+                events = events.filter(
+                    Q(client__first_name__icontains=request.GET['search']) |
+                    Q(client__last_name__icontains=request.GET['search']) |
+                    Q(client__email__icontains=request.GET['search']) |
+                    Q(date__icontains=request.GET['search'])
+                )
 
             return Response(EventSerializer(events, many=True).data)
 
@@ -35,7 +50,7 @@ class EventView(APIView):
         return Response(EventSerializer(event).data)
 
     @authentication_classes([IsSalesGroup])
-    @check_fields(['client', 'status', 'support_contact', 'description', 'date'])
+    @check_fields(['client', 'support_contact', 'notes', 'date', 'attendees'])
     def post(self, request, event_id=None):
         if not User.objects.filter(id=request.data['support_contact']).exists():
             return Response(status=404, data={'error': 'Support contact not found.'})
@@ -47,13 +62,16 @@ class EventView(APIView):
 
         if client.sales_contact != request.user:
             return Response(status=403, data={'error': 'Not authorized.'})
-
+        
+        if not is_valid_date(request.data['date']):
+            return Response(status=400, data={'error': 'Invalid date format. Must be YYYY-MM-DD'})
+        
         event = Event.objects.create(
             support_contact=request.user,
             client=client,
-            status=request.data['status'],
-            description=request.data['description'],
+            notes=request.data['notes'],
             date=request.data['date'],
+            attendees=request.data['attendees']
         )
 
         return Response(EventSerializer(event).data)
@@ -68,14 +86,20 @@ class EventView(APIView):
         if event.support_contact != request.user:
             return Response(status=403, data={'error': 'Not authorized.'})
 
-        if 'status' in request.data:
-            event.status = request.data['status']
+        if 'attendees' in request.data:
+            event.attendees = request.data['attendees']
 
-        if 'description' in request.data:
-            event.description = request.data['description']
+        if 'notes' in request.data:
+            event.description = request.data['notes']
 
         if 'date' in request.data:
             event.date = request.data['date']
+
+        if 'support_contact' in request.data:
+            if not User.objects.filter(id=request.data['support_contact']).exists():
+                return Response(status=404, data={'error': 'Support contact not found.'})
+
+            event.support_contact = request.data['support_contact']
 
         event.save()
 
