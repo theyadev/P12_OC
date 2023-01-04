@@ -1,3 +1,5 @@
+import logging
+
 from ..decorators import check_fields
 from ..models import Client
 from ..permissions import IsSalesGroup, IsSupportGroup
@@ -10,6 +12,8 @@ from rest_framework.decorators import authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class ClientView(APIView):
@@ -30,6 +34,7 @@ class ClientView(APIView):
             return Response(ClientSerializer(clients, many=True).data)
 
         if not Client.objects.filter(id=client_id).exists():
+            logger.warning(f'Client {client_id} not found')
             return Response(status=404, data={'error': 'Client not found.'})
 
         client = Client.objects.get(id=client_id)
@@ -40,6 +45,7 @@ class ClientView(APIView):
     @check_fields(['first_name', 'email', 'last_name'])
     def post(self, request, client_id=None):
         if Client.objects.filter(Q(email=request.data['email'])).exists():
+            logger.warning(f'Client {request.data["email"]} already exists')
             return Response(status=400, data={'error': 'Client already exists.'})
 
         client = Client.objects.create(
@@ -57,6 +63,7 @@ class ClientView(APIView):
     @authentication_classes([IsSalesGroup])
     def put(self, request, client_id):
         if not Client.objects.filter(id=client_id).exists():
+            logger.warning(f'Client {client_id} not found')
             return Response(status=404, data={'error': 'Client not found.'})
 
         client = Client.objects.get(id=client_id)
@@ -86,6 +93,7 @@ class ClientView(APIView):
     @authentication_classes([IsSalesGroup])
     def delete(self, request, client_id):
         if not Client.objects.filter(id=client_id).exists():
+            logger.warning(f'Client {client_id} not found')
             return Response(status=404, data={'error': 'Client not found.'})
 
         client = Client.objects.get(id=client_id)
